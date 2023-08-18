@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HandsomePattern": {
+      "commandName": "Project",
+      "commandLineArgs": "hola"
+    }
+  }
+}
