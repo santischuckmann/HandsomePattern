@@ -13,9 +13,9 @@ namespace HandsomePattern
         private string _fileContent;
         private string _path;
         private string[] _packages;
-        private PatternConfiguration _configuration;
+        private CSProjectConfiguration _configuration;
 
-        public FileCreation(string fileContent, string path, string[] packages, PatternConfiguration configuration)
+        public FileCreation(string fileContent, string path, string[] packages, CSProjectConfiguration configuration)
         {
             _fileContent = fileContent;
             _path = path;
@@ -39,7 +39,7 @@ namespace HandsomePattern
         }
         public void CheckDependencies()
         {
-            using (StreamReader reader = new StreamReader(Path.Combine(_configuration.RootDirectory, $"{_configuration.GlobalNamespace}.csproj")))
+            using (StreamReader reader = new StreamReader(Path.Combine(_configuration.RootDirectory, $"{_configuration.Namespace}.csproj")))
             {
 
                 string line;
@@ -82,7 +82,7 @@ namespace HandsomePattern
                 Tuple.Create("connectionString", "Server=localhost;Database=GestionNutricion;Integrated Security=true;Trust Server Certificate=true;")
             };
 
-            foreach (var tuple in tupleList) 
+            foreach (var tuple in tupleList)
             {
                 newFileContent = newFileContent.Replace(String.Format("[[{0}]]", tuple.Item1), tuple.Item2);
                 newPath = newPath.Replace(String.Format("[[{0}]]", tuple.Item1), tuple.Item2);
@@ -93,17 +93,39 @@ namespace HandsomePattern
         }
     }
 
+    public class DirectoryFinder
+    {
+        public static (bool hasMatched, string lastPath) HasDirectory(string rootDirectory, string[] paths)
+        {
+            if (paths.Length < 1) return (false, "");
+
+            int i = 0;
+            string path = string.Empty;
+            bool matchingPath = true;
+            while (i < paths.Length && matchingPath)
+            {
+                string acummulatedPath = i >= 1 ? $"{paths[i - 1]}\\{paths[i]}" : paths[i];
+                string accumulatedRootDirectory = i >= 1 ? $"{rootDirectory}{paths[i - 1]}" : rootDirectory;
+                path = Path.Combine(rootDirectory, acummulatedPath);
+                matchingPath = Directory.GetDirectories(accumulatedRootDirectory).ToList().Contains(path);
+                i++;
+            }
+
+            return (matchingPath, path);
+        }
+    }
+
     public class CSharpClassContent
     {
-        public CSharpClassContent() 
-        { 
+        public CSharpClassContent()
+        {
 
         }
     }
 
-    public class PatternConfiguration
+    public class CSProjectConfiguration
     {
-        public string GlobalNamespace { get; set; }
+        public string Namespace { get; set; }
         public string RootDirectory { get; set; }
     }
 }

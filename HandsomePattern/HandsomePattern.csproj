@@ -12,9 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Core\" />
     <Folder Include="Api\" />
-    <Folder Include="Infrastructure\Data\" />
   </ItemGroup>
 
   <ItemGroup>
