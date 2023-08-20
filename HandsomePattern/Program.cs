@@ -1,4 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using Microsoft.EntityFrameworkCore;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -33,23 +34,37 @@ namespace HandsomePattern
 
             if (!hasFoundProject) throw new Exception("Error al buscar el projecto: " + projectFolder);
 
-            CSProjectConfiguration configuration = new()
+            string projectNamespace = $"{globalNamespace}.{projectName}";
+
+            DirectoryFinder.CheckDependencies(projectPath, projectNamespace, new string[] { "Microsoft.EntityFrameworkCore", "Microsoft.EntityFrameworkCore.SqlServer" });
+
+            List<FileCreationArgs> fileCreationsArgs = new List<FileCreationArgs>
             {
-                RootDirectory = $"{rootDirectory}\\{globalNamespace}.{projectName}",
-                Namespace = $"{globalNamespace}.{projectName}"
+                new FileCreationArgs()
+                {
+                    Filename = "[[currentNamespace]]DbContext.cs",
+                    PathsToFile = new string[] { "Data" },
+                    Template = Templates.UnitOfWorkTemplate
+                },
+
+                new FileCreationArgs()
+                {
+                    Filename = "ServiceCollectionExtensions.cs",
+                    PathsToFile = new string[] { "Extensions" },
+                    Template = Templates.ServiceExtensionsTemplate
+                }
             };
 
-            var matcher = DirectoryFinder.HasDirectory(projectPath, new string[] { "Data" });
-
-            string[] packages = { "Microsoft.EntityFrameworkCore", "Microsoft.EntityFrameworkCore.SqlServer" };
-
-            if (matcher.hasMatched)
+            foreach (FileCreationArgs _args in fileCreationsArgs) 
             {
-                FileCreation fileCreation = new FileCreation(Templates.UnitOfWorkTemplate, Path.Combine(matcher.lastPath, "[[currentNamespace]]DbContext.cs"), packages, configuration);
-                fileCreation.CheckDependencies();
-                fileCreation.Create();
-            }
+                var matcher = DirectoryFinder.HasDirectory(projectPath, _args.PathsToFile);
 
+                if (matcher.hasMatched)
+                {
+                    FileCreation fileCreation = new FileCreation(_args.Template, Path.Combine(matcher.lastPath, _args.Filename));
+                    fileCreation.Create();
+                }
+            }
         }
     }
 }

@@ -12,15 +12,11 @@ namespace HandsomePattern
     {
         private string _fileContent;
         private string _path;
-        private string[] _packages;
-        private CSProjectConfiguration _configuration;
 
-        public FileCreation(string fileContent, string path, string[] packages, CSProjectConfiguration configuration)
+        public FileCreation(string fileContent, string path)
         {
             _fileContent = fileContent;
             _path = path;
-            _packages = packages;
-            _configuration = configuration;
         }
 
         public void Create()
@@ -35,37 +31,6 @@ namespace HandsomePattern
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
-            }
-        }
-        public void CheckDependencies()
-        {
-            using (StreamReader reader = new StreamReader(Path.Combine(_configuration.RootDirectory, $"{_configuration.Namespace}.csproj")))
-            {
-
-                string line;
-                string packageNamePattern = @"(?<=Include="")[\w|.]+(?="")";
-
-                List<string> packagesInProject = new List<string>();
-
-                while ((line = reader.ReadLine()) != null)
-                {
-                    if (line.Contains("PackageReference"))
-                        packagesInProject.Add(Regex.Match(line, packageNamePattern).Value);
-                }
-
-                foreach (string package in _packages)
-                {
-                    bool hasBeenFound = false;
-                    foreach (string projectPackage in packagesInProject)
-                    {
-                        hasBeenFound = hasBeenFound || projectPackage.Equals(package);
-                    }
-
-                    if (!hasBeenFound)
-                    {
-                        throw new Exception("The following required package was not found: " + package);
-                    }
-                }
             }
         }
 
@@ -113,6 +78,38 @@ namespace HandsomePattern
 
             return (matchingPath, path);
         }
+
+        public static void CheckDependencies(string rootDirectory, string projectNamespace, string[] packages)
+        {
+            using (StreamReader reader = new StreamReader(Path.Combine(rootDirectory, $"{projectNamespace}.csproj")))
+            {
+
+                string line;
+                string packageNamePattern = @"(?<=Include="")[\w|.]+(?="")";
+
+                List<string> packagesInProject = new List<string>();
+
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (line.Contains("PackageReference"))
+                        packagesInProject.Add(Regex.Match(line, packageNamePattern).Value);
+                }
+
+                foreach (string package in packages)
+                {
+                    bool hasBeenFound = false;
+                    foreach (string projectPackage in packagesInProject)
+                    {
+                        hasBeenFound = hasBeenFound || projectPackage.Equals(package);
+                    }
+
+                    if (!hasBeenFound)
+                    {
+                        throw new Exception("The following required package was not found: " + package);
+                    }
+                }
+            }
+        }
     }
 
     public class CSharpClassContent
@@ -121,6 +118,13 @@ namespace HandsomePattern
         {
 
         }
+    }
+
+    public class FileCreationArgs
+    {
+        public string Template { get; set; }
+        public string Filename { get; set; }
+        public string[] PathsToFile { get; set; }
     }
 
     public class CSProjectConfiguration
