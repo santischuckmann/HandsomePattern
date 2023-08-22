@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -131,5 +132,57 @@ namespace HandsomePattern
     {
         public string Namespace { get; set; }
         public string RootDirectory { get; set; }
+    }
+
+    public class ProjectProperties
+    {
+        public ProjectProperties(string projectName, string globalNamespace, string rootDirectory)
+        {
+            ProjectName = projectName;
+            var projectFolder = $"{globalNamespace}.{projectName}";
+            ProjectFolder = projectFolder;
+            ProjectPath = Path.Combine(rootDirectory, projectFolder);
+            ProjectNamespace = projectFolder;
+        }
+        public string ProjectName { get; set; }
+        public string ProjectPath { get; set; }
+        public string ProjectFolder { get; set; }
+        public string ProjectNamespace { get; set; }
+    }
+
+    public class CreationExecution
+    {
+        private string _rootDirectory;
+        private ProjectProperties _projectProperties;
+        private List<FileCreationArgs> _fileCreationArgs;
+        private string[] _packages;
+        
+        public CreationExecution(string rootDirectory, ProjectProperties projectProperties, List<FileCreationArgs> fileCreationArgs, string[] packages)
+        {
+            _projectProperties = projectProperties; 
+            _fileCreationArgs = fileCreationArgs; 
+            _rootDirectory = rootDirectory;
+            _packages = packages;
+        }
+
+        public void Execute()
+        {
+            bool hasFoundProject = Directory.GetDirectories(_rootDirectory).ToList().Contains(_projectProperties.ProjectPath);
+
+            if (!hasFoundProject) throw new Exception("Error al buscar el projecto: " + _projectProperties.ProjectFolder);
+
+            DirectoryFinder.CheckDependencies(_projectProperties.ProjectPath, _projectProperties.ProjectNamespace, _packages);
+
+            foreach (FileCreationArgs _args in _fileCreationArgs)
+            {
+                var matcher = DirectoryFinder.HasDirectory(_projectProperties.ProjectPath, _args.PathsToFile);
+
+                if (matcher.hasMatched)
+                {
+                    FileCreation fileCreation = new FileCreation(_args.Template, Path.Combine(matcher.lastPath, _args.Filename));
+                    fileCreation.Create();
+                }
+            }
+        }
     }
 }

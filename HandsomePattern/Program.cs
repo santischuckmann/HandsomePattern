@@ -1,11 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-using Microsoft.EntityFrameworkCore;
-using System.IO;
-using System.Text;
-using System.Text.RegularExpressions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-
-namespace HandsomePattern
+﻿namespace HandsomePattern
 {
     class Program
     {
@@ -25,18 +18,9 @@ namespace HandsomePattern
 
             if (!isSolution) throw new Exception("Para utilizar esta herramienta, posicionese dentro de una solucion de C#.");
 
-            // infrastructure flow
+            string[] packages = new string[] { "Microsoft.EntityFrameworkCore", "Microsoft.EntityFrameworkCore.SqlServer", "Microsoft.OpenApi" };
 
-            string projectName = "Infrastructure";
-            string projectFolder = $"{globalNamespace}.Infrastructure";
-            string projectPath = Path.Combine(rootDirectory, projectFolder);
-            bool hasFoundProject = Directory.GetDirectories(rootDirectory).ToList().Contains(projectPath);
-
-            if (!hasFoundProject) throw new Exception("Error al buscar el projecto: " + projectFolder);
-
-            string projectNamespace = $"{globalNamespace}.{projectName}";
-
-            DirectoryFinder.CheckDependencies(projectPath, projectNamespace, new string[] { "Microsoft.EntityFrameworkCore", "Microsoft.EntityFrameworkCore.SqlServer" });
+            ProjectProperties projectProperties = new ProjectProperties(projectName: "Infrastructure", globalNamespace: globalNamespace, rootDirectory: rootDirectory);
 
             List<FileCreationArgs> fileCreationsArgs = new List<FileCreationArgs>
             {
@@ -55,16 +39,9 @@ namespace HandsomePattern
                 }
             };
 
-            foreach (FileCreationArgs _args in fileCreationsArgs) 
-            {
-                var matcher = DirectoryFinder.HasDirectory(projectPath, _args.PathsToFile);
+            CreationExecution process = new CreationExecution(rootDirectory, projectProperties, fileCreationsArgs, packages);
 
-                if (matcher.hasMatched)
-                {
-                    FileCreation fileCreation = new FileCreation(_args.Template, Path.Combine(matcher.lastPath, _args.Filename));
-                    fileCreation.Create();
-                }
-            }
+            process.Execute();
         }
     }
 }
