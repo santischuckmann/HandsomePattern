@@ -2,7 +2,9 @@
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -13,11 +15,13 @@ namespace HandsomePattern
     {
         private string _fileContent;
         private string _path;
+        private string _namespace;
 
-        public FileCreation(string fileContent, string path)
+        public FileCreation(string fileContent, string path, string Namespace)
         {
             _fileContent = fileContent;
             _path = path;
+            _namespace = Namespace;
         }
 
         public void Create()
@@ -37,15 +41,14 @@ namespace HandsomePattern
 
         public void AppendVariables()
         {
-            Console.WriteLine(typeof(Program).Namespace);
-            // es probable que esto tenga que ser leido de un archivo de config
             string newFileContent = _fileContent;
             string newPath = _path;
 
             List<Tuple<string, string>> tupleList = new List<Tuple<string, string>>()
             {
-                Tuple.Create("currentNamespace", typeof(Program).Namespace),
-                Tuple.Create("connectionString", "Server=localhost;Database=GestionNutricion;Integrated Security=true;Trust Server Certificate=true;")
+                Tuple.Create("currentNamespace", _namespace),
+                Tuple.Create("connectionString", "Server=localhost;Database=GestionNutricion;Integrated Security=true;Trust Server Certificate=true;"),
+                Tuple.Create("databaseContext", $"{_namespace}Context")
             };
 
             foreach (var tuple in tupleList)
@@ -61,9 +64,9 @@ namespace HandsomePattern
 
     public class DirectoryFinder
     {
-        public static (bool hasMatched, string lastPath) HasDirectory(string rootDirectory, string[] paths)
+        public static bool HasDirectory(string rootDirectory, string[] paths)
         {
-            if (paths.Length < 1) return (false, "");
+            if (paths.Length < 1) return false;
 
             int i = 0;
             string path = string.Empty;
@@ -77,7 +80,7 @@ namespace HandsomePattern
                 i++;
             }
 
-            return (matchingPath, path);
+            return matchingPath;
         }
 
         public static void CheckDependencies(string rootDirectory, string projectNamespace, string[] packages)
@@ -138,12 +141,15 @@ namespace HandsomePattern
     {
         public ProjectProperties(string projectName, string globalNamespace, string rootDirectory)
         {
+            GlobalNamespace = globalNamespace;
             ProjectName = projectName;
             var projectFolder = $"{globalNamespace}.{projectName}";
             ProjectFolder = projectFolder;
             ProjectPath = Path.Combine(rootDirectory, projectFolder);
             ProjectNamespace = projectFolder;
         }
+
+        public string GlobalNamespace { get; set; }
         public string ProjectName { get; set; }
         public string ProjectPath { get; set; }
         public string ProjectFolder { get; set; }
@@ -156,11 +162,11 @@ namespace HandsomePattern
         private ProjectProperties _projectProperties;
         private List<FileCreationArgs> _fileCreationArgs;
         private string[] _packages;
-        
+
         public CreationExecution(string rootDirectory, ProjectProperties projectProperties, List<FileCreationArgs> fileCreationArgs, string[] packages)
         {
-            _projectProperties = projectProperties; 
-            _fileCreationArgs = fileCreationArgs; 
+            _projectProperties = projectProperties;
+            _fileCreationArgs = fileCreationArgs;
             _rootDirectory = rootDirectory;
             _packages = packages;
         }
@@ -175,13 +181,47 @@ namespace HandsomePattern
 
             foreach (FileCreationArgs _args in _fileCreationArgs)
             {
-                var matcher = DirectoryFinder.HasDirectory(_projectProperties.ProjectPath, _args.PathsToFile);
+                var hasMatched = DirectoryFinder.HasDirectory(_projectProperties.ProjectPath, _args.PathsToFile);
 
-                if (matcher.hasMatched)
+                var pathForFile = CreatePathForFile(_args.PathsToFile);
+
+                if (!hasMatched)
+                    CreateDirectoriesForFile(_args.PathsToFile);
+
+                FileCreation fileCreation = new FileCreation(_args.Template, Path.Combine(pathForFile, _args.Filename), _projectProperties.GlobalNamespace);
+                fileCreation.Create();
+
+            }
+        }
+
+        private string CreatePathForFile(string[] pathsToFile)
+        {
+            string finalPath = _projectProperties.ProjectPath;
+            foreach (string path in pathsToFile)
+            {
+                finalPath = Path.Combine(finalPath, path);
+            }
+
+            return finalPath;
+        }
+
+        private void CreateDirectoriesForFile(string[] pathsToFile)
+        {
+            string rootDirectory = _projectProperties.ProjectPath;
+
+            bool insideNonCreatedDirectory = false;
+            foreach (string path in pathsToFile)
+            {
+                string newPath = Path.Combine(rootDirectory, path);
+                bool hasBeenCreated = Directory.GetDirectories(rootDirectory).ToList().Contains(newPath);
+
+                if (!hasBeenCreated || insideNonCreatedDirectory)
                 {
-                    FileCreation fileCreation = new FileCreation(_args.Template, Path.Combine(matcher.lastPath, _args.Filename));
-                    fileCreation.Create();
+                    Directory.CreateDirectory(newPath);
+                    insideNonCreatedDirectory = true;
                 }
+
+                rootDirectory = newPath;
             }
         }
     }

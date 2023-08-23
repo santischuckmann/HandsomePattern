@@ -57,8 +57,8 @@ namespace [[currentNamespace]].Infrastructure.Extensions
     {
         public static IServiceCollection AddDbContexts(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<GestionNutricionContext>(options =>
-               options.UseSqlServer(configuration.GetConnectionString(""GestionNutricion"")), ServiceLifetime.Transient
+            services.AddDbContext<[[databaseContext]]>(options =>
+               options.UseSqlServer(configuration.GetConnectionString(""[[currentNamespace]]"")), ServiceLifetime.Transient
            );
 
             return services;
@@ -89,7 +89,7 @@ namespace [[currentNamespace]].Infrastructure.Extensions
         {
             services.AddSwaggerGen(doc =>
             {
-                doc.SwaggerDoc(""v1"", new OpenApiInfo { Title = ""Gestion Nutricion API"", Version = ""v3.10"" });
+                doc.SwaggerDoc(""v1"", new OpenApiInfo { Title = ""[[currentNamespace]] API"", Version = ""v1.0"" });
 
                 doc.AddSecurityDefinition(""Bearer"", new OpenApiSecurityScheme
                 {
