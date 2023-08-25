@@ -20,9 +20,9 @@
 
             string[] packages = new string[] { "Microsoft.EntityFrameworkCore", "Microsoft.EntityFrameworkCore.SqlServer", "Microsoft.OpenApi", "AutoMapper.Extensions.Microsoft.DependencyInjection", "Swashbuckle.AspNetCore.SwaggerGen" };
 
-            ProjectProperties projectProperties = new ProjectProperties(projectName: "Infrastructure", globalNamespace: globalNamespace, rootDirectory: rootDirectory);
+            ProjectProperties infrastructureProperties = new ProjectProperties(projectName: "Infrastructure", globalNamespace: globalNamespace, rootDirectory: rootDirectory);
 
-            List<FileCreationArgs> fileCreationsArgs = new List<FileCreationArgs>
+            List<FileCreationArgs> infraFileCreationsArgs = new List<FileCreationArgs>
             {
                 new FileCreationArgs()
                 {
@@ -36,12 +36,42 @@
                     Filename = "ServiceCollectionExtensions.cs",
                     PathsToFile = new string[] { "Extensions" },
                     Template = Templates.ServiceExtensionsTemplate
+                },
+                
+                new FileCreationArgs()
+                {
+                    Filename = "BaseRepository.cs",
+                    PathsToFile = new string[] { "Repositories" },
+                    Template = Templates.BaseRepositoryTemplate
                 }
             };
 
-            CreationExecution process = new CreationExecution(rootDirectory, projectProperties, fileCreationsArgs, packages);
+            ProjectProperties coreProperties = new ProjectProperties(projectName: "Core", globalNamespace: globalNamespace, rootDirectory: rootDirectory);
 
-            process.Execute();
+            List<FileCreationArgs> coreFileCreationsArgs = new List<FileCreationArgs>
+            {
+                new FileCreationArgs()
+                {
+                    Filename = "IRepository.cs",
+                    PathsToFile = new string[] { "Interfaces", "Repositories" },
+                    Template = Templates.IRepositoryTemplate
+                },
+
+                new FileCreationArgs()
+                {
+                    Filename = "CommonEntity.cs",
+                    PathsToFile = new string[] { "Entitys" },
+                    Template = Templates.CommonEntityTemplate
+                },
+            };
+
+            CreationExecution infraProcess = new CreationExecution(rootDirectory, infrastructureProperties, infraFileCreationsArgs, packages);
+
+            infraProcess.Execute();
+
+            CreationExecution coreProcess = new CreationExecution(rootDirectory, coreProperties, coreFileCreationsArgs, new string[] { });
+
+            coreProcess.Execute();
         }
     }
 }

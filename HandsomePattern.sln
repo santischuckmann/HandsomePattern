@@ -5,7 +5,9 @@ VisualStudioVersion = 17.5.33424.131
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandsomePattern", "HandsomePattern\HandsomePattern.csproj", "{20AB2857-EC73-4994-85A3-214CB9C1127B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HandsomePattern.Infrastructure", "HandsomePattern.Infrastructure\HandsomePattern.Infrastructure.csproj", "{5685BE9B-38DE-47AA-AD0B-1E947EBE062B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandsomePattern.Infrastructure", "HandsomePattern.Infrastructure\HandsomePattern.Infrastructure.csproj", "{5685BE9B-38DE-47AA-AD0B-1E947EBE062B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HandsomePattern.Core", "HandsomePattern.Core\HandsomePattern.Core.csproj", "{FCE3838F-38AE-4799-93BE-85D164AB0883}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{5685BE9B-38DE-47AA-AD0B-1E947EBE062B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5685BE9B-38DE-47AA-AD0B-1E947EBE062B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5685BE9B-38DE-47AA-AD0B-1E947EBE062B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCE3838F-38AE-4799-93BE-85D164AB0883}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCE3838F-38AE-4799-93BE-85D164AB0883}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCE3838F-38AE-4799-93BE-85D164AB0883}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCE3838F-38AE-4799-93BE-85D164AB0883}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
