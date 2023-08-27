@@ -15,6 +15,15 @@
     <ProjectReference Include="..\HandsomePattern.Core\HandsomePattern.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\HandsomePattern.Core\HandsomePattern.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HandsomePattern.Core\HandsomePattern.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HandsomePattern.Core\HandsomePattern.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="Repositories\" />
   </ItemGroup>
 </Project>

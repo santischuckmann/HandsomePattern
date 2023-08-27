@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using HandsomePattern.Enums;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace HandsomePattern
@@ -121,6 +122,7 @@ namespace HandsomePattern
         public string Template { get; set; }
         public string Filename { get; set; }
         public string[] PathsToFile { get; set; }
+        public DependencyType DependencyType { get; set; } = DependencyType.None;
     }
 
     public class CSProjectConfiguration
@@ -170,8 +172,6 @@ namespace HandsomePattern
             bool hasFoundProject = Directory.GetDirectories(_rootDirectory).ToList().Contains(_projectProperties.ProjectPath);
 
             if (!hasFoundProject) throw new Exception("Error al buscar el projecto: " + _projectProperties.ProjectFolder);
-
-
 
             XmlDocument doc = new XmlDocument();
             string csprojPath = Path.Combine(_projectProperties.ProjectPath, $"{_projectProperties.ProjectNamespace}.csproj");

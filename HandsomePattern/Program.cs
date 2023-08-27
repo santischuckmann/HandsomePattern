@@ -28,7 +28,7 @@
                 {
                     Filename = "[[currentNamespace]]DbContext.cs",
                     PathsToFile = new string[] { "Data" },
-                    Template = Templates.UnitOfWorkTemplate
+                    Template = Templates.DbContextTemplate
                 },
 
                 new FileCreationArgs()
@@ -43,6 +43,14 @@
                     Filename = "BaseRepository.cs",
                     PathsToFile = new string[] { "Repositories" },
                     Template = Templates.BaseRepositoryTemplate
+                },
+
+                new FileCreationArgs()
+                {
+                    Filename = "UnitOfWork.cs",
+                    PathsToFile = new string[] { "Repositories" },
+                    Template = Templates.UnitOfWorkTemplate,
+                    DependencyType = Enums.DependencyType.Repository
                 }
             };
 
@@ -54,14 +62,21 @@
                 {
                     Filename = "IRepository.cs",
                     PathsToFile = new string[] { "Interfaces", "Repositories" },
-                    Template = Templates.IRepositoryTemplate
+                    Template = Templates.IRepositoryTemplate,
+                },
+
+                new FileCreationArgs()
+                {
+                    Filename = "IUnitOfWork.cs",
+                    PathsToFile = new string[] { "Interfaces", "Repositories" },
+                    Template = Templates.IUnitOfWorkTemplate,
                 },
 
                 new FileCreationArgs()
                 {
                     Filename = "CommonEntity.cs",
                     PathsToFile = new string[] { "Entitys" },
-                    Template = Templates.CommonEntityTemplate
+                    Template = Templates.CommonEntityTemplate,
                 },
             };
 

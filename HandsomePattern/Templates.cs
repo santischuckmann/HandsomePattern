@@ -8,7 +8,7 @@ namespace HandsomePattern
 {
     public static class Templates
     {
-        public const string UnitOfWorkTemplate = @"
+        public const string DbContextTemplate = @"
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Reflection;
@@ -222,5 +222,73 @@ namespace [[currentNamespace]].Core.Entitys
     }
 }
 ";
+
+        public const string IUnitOfWorkTemplate = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace [[currentNamespace]].Core.Interfaces.Repositories
+{
+    public interface IUnitOfWork: IDisposable
+    {
+        #region Repositories
+
+        #endregion
+
+        void Save();
+        Task SaveAsync();
+    }
+}
+";
+
+        public const string UnitOfWorkTemplate = @"
+using [[currentNamespace]].Core.Interfaces.Repositories;
+using [[currentNamespace]].Infrastructure.Data;
+
+namespace [[currentNamespace]].Infrastructure.Repositories
+{
+    public class UnitOfWork: IUnitOfWork
+    {
+        private readonly [[databaseContext]] _context;
+        #region RepositoriesAttributes
+
+
+        #endregion
+
+        public UnitOfWork([[databaseContext]] context)
+        {
+            _context = context;
+        }
+
+        #region RepositoriesProperties
+
+
+        #endregion
+
+        public void Dispose()
+        {
+            if (_context != null)
+            {
+                _context.Dispose();
+            }
+        }
+        public void Save()
+        {
+            _context.SaveChanges();
+        }
+
+        public async Task SaveAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+
+    }
+}
+";
+
+
     }
 }
