@@ -1,6 +1,6 @@
 
 using HandsomePattern.Infrastructure.Data;
-using HandsomePattern.Core.Interfaces.Repositories
+using HandsomePattern.Core.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace HandsomePattern.Infrastructure.Repositories

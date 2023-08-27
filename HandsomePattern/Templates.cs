@@ -123,7 +123,7 @@ namespace [[currentNamespace]].Infrastructure.Extensions
 
         public const string BaseRepositoryTemplate = @"
 using [[currentNamespace]].Infrastructure.Data;
-using [[currentNamespace]].Core.Interfaces.Repositories
+using [[currentNamespace]].Core.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace [[currentNamespace]].Infrastructure.Repositories

@@ -65,11 +65,11 @@
                 },
             };
 
-            CreationExecution infraProcess = new CreationExecution(rootDirectory, infrastructureProperties, infraFileCreationsArgs, packages);
+            CreationExecution infraProcess = new CreationExecution(rootDirectory, infrastructureProperties, infraFileCreationsArgs, packages, new string[] { "..\\HandsomePattern.Core\\HandsomePattern.Core.csproj" });
 
             infraProcess.Execute();
 
-            CreationExecution coreProcess = new CreationExecution(rootDirectory, coreProperties, coreFileCreationsArgs, new string[] { });
+            CreationExecution coreProcess = new CreationExecution(rootDirectory, coreProperties, coreFileCreationsArgs, new string[] { }, new string[] { });
 
             coreProcess.Execute();
         }

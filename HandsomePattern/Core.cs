@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace HandsomePattern
 {
@@ -65,7 +66,7 @@ namespace HandsomePattern
             while (i < paths.Length && matchingPath)
             {
                 string acummulatedPath = i >= 1 ? $"{paths[i - 1]}\\{paths[i]}" : paths[i];
-                string accumulatedRootDirectory = i >= 1 ? $"{rootDirectory}{paths[i - 1]}" : rootDirectory;
+                string accumulatedRootDirectory = i >= 1 ? $"{rootDirectory}\\{paths[i - 1]}" : rootDirectory;
                 path = Path.Combine(rootDirectory, acummulatedPath);
                 matchingPath = Directory.GetDirectories(accumulatedRootDirectory).ToList().Contains(path);
                 i++;
@@ -153,13 +154,15 @@ namespace HandsomePattern
         private ProjectProperties _projectProperties;
         private List<FileCreationArgs> _fileCreationArgs;
         private string[] _packages;
+        private string[] _references;
 
-        public CreationExecution(string rootDirectory, ProjectProperties projectProperties, List<FileCreationArgs> fileCreationArgs, string[] packages)
+        public CreationExecution(string rootDirectory, ProjectProperties projectProperties, List<FileCreationArgs> fileCreationArgs, string[] packages, string[] references)
         {
             _projectProperties = projectProperties;
             _fileCreationArgs = fileCreationArgs;
             _rootDirectory = rootDirectory;
             _packages = packages;
+            _references = references;
         }
 
         public void Execute()
@@ -167,6 +170,35 @@ namespace HandsomePattern
             bool hasFoundProject = Directory.GetDirectories(_rootDirectory).ToList().Contains(_projectProperties.ProjectPath);
 
             if (!hasFoundProject) throw new Exception("Error al buscar el projecto: " + _projectProperties.ProjectFolder);
+
+
+
+            XmlDocument doc = new XmlDocument();
+            string csprojPath = Path.Combine(_projectProperties.ProjectPath, $"{_projectProperties.ProjectNamespace}.csproj");
+            doc.Load(csprojPath);
+
+            XmlNodeList itemGroupNodes = doc.SelectNodes("//ItemGroup");
+
+            XmlNode firstItemGroupNode = itemGroupNodes[0];
+
+            foreach (string reference in _references)
+            {
+                if (firstItemGroupNode != null)
+                {
+                    XmlNode itemGroupReference = doc.CreateElement("ItemGroup");
+                    XmlNode referenceNode = doc.CreateElement("ProjectReference");
+
+                    // Set attributes for the Reference node
+                    XmlAttribute includeAttribute = doc.CreateAttribute("Include");
+                    includeAttribute.Value = reference; // Update with the actual project name
+                    referenceNode.Attributes.Append(includeAttribute);
+
+                    itemGroupReference.AppendChild(referenceNode);
+
+                    firstItemGroupNode.ParentNode.InsertAfter(itemGroupReference, firstItemGroupNode);
+                    doc.Save(csprojPath);
+                }
+            }
 
             DirectoryFinder.CheckDependencies(_projectProperties.ProjectPath, _projectProperties.ProjectNamespace, _packages);
 
