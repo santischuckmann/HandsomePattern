@@ -3,6 +3,7 @@ using HandsomePattern.Infrastructure.Data;
 using HandsomePattern.Core.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 
+// comentario para que no se recree
 namespace HandsomePattern.Infrastructure.Repositories
 {
     public class BaseRepository<T> : IRepository<T> where T : class

@@ -2,6 +2,7 @@
 using HandsomePattern.Core.Interfaces.Repositories;
 using HandsomePattern.Infrastructure.Data;
 
+//comentario para que no se recree
 namespace HandsomePattern.Infrastructure.Repositories
 {
     public class UnitOfWork: IUnitOfWork

@@ -1,5 +1,5 @@
 ﻿using HandsomePattern.Enums;
-using System.Text.RegularExpressions;
+using HandsomePattern.Goodies;
 using System.Xml;
 
 namespace HandsomePattern
@@ -55,80 +55,12 @@ namespace HandsomePattern
         }
     }
 
-    public class DirectoryFinder
-    {
-        public static bool HasDirectory(string rootDirectory, string[] paths)
-        {
-            if (paths.Length < 1) return false;
-
-            int i = 0;
-            string path = string.Empty;
-            bool matchingPath = true;
-            while (i < paths.Length && matchingPath)
-            {
-                string acummulatedPath = i >= 1 ? $"{paths[i - 1]}\\{paths[i]}" : paths[i];
-                string accumulatedRootDirectory = i >= 1 ? $"{rootDirectory}\\{paths[i - 1]}" : rootDirectory;
-                path = Path.Combine(rootDirectory, acummulatedPath);
-                matchingPath = Directory.GetDirectories(accumulatedRootDirectory).ToList().Contains(path);
-                i++;
-            }
-
-            return matchingPath;
-        }
-
-        public static void CheckDependencies(string rootDirectory, string projectNamespace, string[] packages)
-        {
-            using (StreamReader reader = new StreamReader(Path.Combine(rootDirectory, $"{projectNamespace}.csproj")))
-            {
-
-                string line;
-                string packageNamePattern = @"(?<=Include="")[\w|.]+(?="")";
-
-                List<string> packagesInProject = new List<string>();
-
-                while ((line = reader.ReadLine()) != null)
-                {
-                    if (line.Contains("PackageReference"))
-                        packagesInProject.Add(Regex.Match(line, packageNamePattern).Value);
-                }
-
-                foreach (string package in packages)
-                {
-                    bool hasBeenFound = false;
-                    foreach (string projectPackage in packagesInProject)
-                    {
-                        hasBeenFound = hasBeenFound || projectPackage.Equals(package);
-                    }
-
-                    if (!hasBeenFound)
-                    {
-                        throw new Exception("The following required package was not found: " + package);
-                    }
-                }
-            }
-        }
-    }
-
-    public class CSharpClassContent
-    {
-        public CSharpClassContent()
-        {
-
-        }
-    }
-
     public class FileCreationArgs
     {
         public string Template { get; set; }
         public string Filename { get; set; }
         public string[] PathsToFile { get; set; }
         public DependencyType DependencyType { get; set; } = DependencyType.None;
-    }
-
-    public class CSProjectConfiguration
-    {
-        public string Namespace { get; set; }
-        public string RootDirectory { get; set; }
     }
 
     public class ProjectProperties
@@ -177,20 +109,34 @@ namespace HandsomePattern
             string csprojPath = Path.Combine(_projectProperties.ProjectPath, $"{_projectProperties.ProjectNamespace}.csproj");
             doc.Load(csprojPath);
 
+            HashSet<string> missingReferences = new HashSet<string>();
+
             XmlNodeList itemGroupNodes = doc.SelectNodes("//ItemGroup");
+            XmlNodeList projectReferences = doc.SelectNodes("//ProjectReference");
+
+            foreach (XmlNode projRef in projectReferences)
+            {
+                foreach (string rawReference in _references)
+                {
+                    string reference = CommonGoodies.GetStringReplacedWithNamespace(rawReference, _projectProperties.GlobalNamespace);
+                    if (projRef.Attributes["Include"].Value != reference)
+                    {
+                        missingReferences.Add(reference);
+                    }
+                }
+            }
 
             XmlNode firstItemGroupNode = itemGroupNodes[0];
 
-            foreach (string reference in _references)
+            foreach (string reference in missingReferences)
             {
                 if (firstItemGroupNode != null)
                 {
                     XmlNode itemGroupReference = doc.CreateElement("ItemGroup");
                     XmlNode referenceNode = doc.CreateElement("ProjectReference");
 
-                    // Set attributes for the Reference node
                     XmlAttribute includeAttribute = doc.CreateAttribute("Include");
-                    includeAttribute.Value = reference; // Update with the actual project name
+                    includeAttribute.Value = reference; 
                     referenceNode.Attributes.Append(includeAttribute);
 
                     itemGroupReference.AppendChild(referenceNode);
@@ -200,13 +146,17 @@ namespace HandsomePattern
                 }
             }
 
-            DirectoryFinder.CheckDependencies(_projectProperties.ProjectPath, _projectProperties.ProjectNamespace, _packages);
+            CommonGoodies.CheckDependencies(_projectProperties.ProjectPath, _projectProperties.ProjectNamespace, _packages);
 
             foreach (FileCreationArgs _args in _fileCreationArgs)
             {
-                var hasMatched = DirectoryFinder.HasDirectory(_projectProperties.ProjectPath, _args.PathsToFile);
-
                 var pathForFile = CreatePathForFile(_args.PathsToFile);
+
+                bool isAlreadyCreated = IsFileAlreadyCreated(_args.Filename, pathForFile);
+
+                if (isAlreadyCreated) continue;
+
+                var hasMatched = CommonGoodies.HasDirectory(_projectProperties.ProjectPath, _args.PathsToFile);
 
                 if (!hasMatched)
                     CreateDirectoriesForFile(_args.PathsToFile);
@@ -215,6 +165,13 @@ namespace HandsomePattern
                 fileCreation.Create();
 
             }
+        }
+
+        private bool IsFileAlreadyCreated(string rawFilename, string pathForFile)
+        {
+            string filename = CommonGoodies.GetStringReplacedWithNamespace(rawFilename, _projectProperties.GlobalNamespace);
+
+            return File.Exists(Path.Combine(pathForFile, filename));
         }
 
         private string CreatePathForFile(string[] pathsToFile)

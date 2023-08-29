@@ -80,7 +80,7 @@
                 },
             };
 
-            CreationExecution infraProcess = new CreationExecution(rootDirectory, infrastructureProperties, infraFileCreationsArgs, packages, new string[] { "..\\HandsomePattern.Core\\HandsomePattern.Core.csproj" });
+            CreationExecution infraProcess = new CreationExecution(rootDirectory, infrastructureProperties, infraFileCreationsArgs, packages, new string[] { "..\\[[currentNamespace]].Core\\[[currentNamespace]].Core.csproj" });
 
             infraProcess.Execute();
 
