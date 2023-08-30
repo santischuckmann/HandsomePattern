@@ -1,5 +1,8 @@
 ﻿using HandsomePattern.Enums;
 using HandsomePattern.Goodies;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace HandsomePattern
@@ -73,6 +76,7 @@ namespace HandsomePattern
             ProjectFolder = projectFolder;
             ProjectPath = Path.Combine(rootDirectory, projectFolder);
             ProjectNamespace = projectFolder;
+            ExtensionPath = Path.Combine(ProjectPath, "Extensions", "ServiceCollectionExtensions.cs");
         }
 
         public string GlobalNamespace { get; set; }
@@ -80,74 +84,22 @@ namespace HandsomePattern
         public string ProjectPath { get; set; }
         public string ProjectFolder { get; set; }
         public string ProjectNamespace { get; set; }
+        public string ExtensionPath { get; set; }
     }
 
     public class CreationExecution
     {
-        private string _rootDirectory;
         private ProjectProperties _projectProperties;
         private List<FileCreationArgs> _fileCreationArgs;
-        private string[] _packages;
-        private string[] _references;
 
-        public CreationExecution(string rootDirectory, ProjectProperties projectProperties, List<FileCreationArgs> fileCreationArgs, string[] packages, string[] references)
+        public CreationExecution(ProjectProperties projectProperties, List<FileCreationArgs> fileCreationArgs)
         {
             _projectProperties = projectProperties;
             _fileCreationArgs = fileCreationArgs;
-            _rootDirectory = rootDirectory;
-            _packages = packages;
-            _references = references;
         }
 
         public void Execute()
         {
-            bool hasFoundProject = Directory.GetDirectories(_rootDirectory).ToList().Contains(_projectProperties.ProjectPath);
-
-            if (!hasFoundProject) throw new Exception("Error al buscar el projecto: " + _projectProperties.ProjectFolder);
-
-            XmlDocument doc = new XmlDocument();
-            string csprojPath = Path.Combine(_projectProperties.ProjectPath, $"{_projectProperties.ProjectNamespace}.csproj");
-            doc.Load(csprojPath);
-
-            HashSet<string> missingReferences = new HashSet<string>();
-
-            XmlNodeList itemGroupNodes = doc.SelectNodes("//ItemGroup");
-            XmlNodeList projectReferences = doc.SelectNodes("//ProjectReference");
-
-            foreach (XmlNode projRef in projectReferences)
-            {
-                foreach (string rawReference in _references)
-                {
-                    string reference = CommonGoodies.GetStringReplacedWithNamespace(rawReference, _projectProperties.GlobalNamespace);
-                    if (projRef.Attributes["Include"].Value != reference)
-                    {
-                        missingReferences.Add(reference);
-                    }
-                }
-            }
-
-            XmlNode firstItemGroupNode = itemGroupNodes[0];
-
-            foreach (string reference in missingReferences)
-            {
-                if (firstItemGroupNode != null)
-                {
-                    XmlNode itemGroupReference = doc.CreateElement("ItemGroup");
-                    XmlNode referenceNode = doc.CreateElement("ProjectReference");
-
-                    XmlAttribute includeAttribute = doc.CreateAttribute("Include");
-                    includeAttribute.Value = reference; 
-                    referenceNode.Attributes.Append(includeAttribute);
-
-                    itemGroupReference.AppendChild(referenceNode);
-
-                    firstItemGroupNode.ParentNode.InsertAfter(itemGroupReference, firstItemGroupNode);
-                    doc.Save(csprojPath);
-                }
-            }
-
-            CommonGoodies.CheckDependencies(_projectProperties.ProjectPath, _projectProperties.ProjectNamespace, _packages);
-
             foreach (FileCreationArgs _args in _fileCreationArgs)
             {
                 var pathForFile = CreatePathForFile(_args.PathsToFile);
@@ -164,6 +116,52 @@ namespace HandsomePattern
                 FileCreation fileCreation = new FileCreation(_args.Template, Path.Combine(pathForFile, _args.Filename), _projectProperties.GlobalNamespace);
                 fileCreation.Create();
 
+                string section = GetSectionByDependencyType(_args.DependencyType);
+
+                if (section.Length > 0)
+                {
+                    string extensionsContent = File.ReadAllText(_projectProperties.ExtensionPath);
+
+                    string regionPattern = @"#region\s+" + Regex.Escape(section) + @"(?<content>.*?)#endregion";
+                    Match regionMatch = Regex.Match(extensionsContent, regionPattern, RegexOptions.Singleline);
+
+                    if (regionMatch.Success)
+                    {
+                        string newContent = "services.AddScoped<IUnitOfWork, UnitOfWork>();";
+
+                        string oldRegionContent = regionMatch.Groups["content"].Value;
+
+                        string identation = oldRegionContent.Replace("\r", "").Replace("\n", "");
+
+                        StringBuilder newRegionContent = new StringBuilder()
+                            .Append(oldRegionContent)
+                            .Append(newContent)
+                            .Append(Environment.NewLine)
+                            .Append(Environment.NewLine)
+                            .Append(identation);
+
+                        //string newRegionContent = oldRegionContent + Environment.NewLine + identation + newContent;
+
+                        string modifiedFileContent = extensionsContent.Replace(oldRegionContent, newRegionContent.ToString());
+                        File.WriteAllText(_projectProperties.ExtensionPath, modifiedFileContent);
+                    }
+                }
+            }
+        }
+
+        private string GetSectionByDependencyType(DependencyType dependencyType)
+        {
+            switch (dependencyType) 
+            {
+                case DependencyType.Repository:
+                    return "Repositories";
+                case DependencyType.Service:
+                    return "Services";
+                case DependencyType.Handler:
+                    return "Handlers";
+                case DependencyType.None:
+                default:
+                    return "";
             }
         }
 

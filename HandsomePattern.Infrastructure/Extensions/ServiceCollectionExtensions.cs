@@ -1,5 +1,7 @@
 
 using HandsomePattern.Infrastructure.Data;
+using HandsomePattern.Infrastructure.Repositories;
+using HandsomePattern.Core.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,15 +26,21 @@ namespace HandsomePattern.Infrastructure.Extensions
             #region Repositories
 
 
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             #endregion
 
             #region Services
 
 
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             #endregion
 
             #region Handlers
 
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             #endregion
 

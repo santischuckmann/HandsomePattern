@@ -46,6 +46,8 @@ namespace [[currentNamespace]].Infrastructure.Data
 
         public const string ServiceExtensionsTemplate = @"
 using [[currentNamespace]].Infrastructure.Data;
+using [[currentNamespace]].Infrastructure.Repositories;
+using [[currentNamespace]].Core.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,11 +1,13 @@
-﻿namespace HandsomePattern
+﻿using HandsomePattern.Logic;
+
+namespace HandsomePattern
 {
     class Program
     {
         static void Main(string[] args)
         {
-
-            string globalNamespace =  typeof(Program).Namespace;
+            // should be read from a configuration file, or from input interactively
+            string globalNamespace = args[0];
 
             string rootDirectory = Directory.GetCurrentDirectory();
 
@@ -21,6 +23,12 @@
             string[] packages = new string[] { "Microsoft.EntityFrameworkCore", "Microsoft.EntityFrameworkCore.SqlServer", "Microsoft.OpenApi", "AutoMapper.Extensions.Microsoft.DependencyInjection", "Swashbuckle.AspNetCore.SwaggerGen" };
 
             ProjectProperties infrastructureProperties = new ProjectProperties(projectName: "Infrastructure", globalNamespace: globalNamespace, rootDirectory: rootDirectory);
+
+            Project infrastructure = new Project(infrastructureProperties, packages, new string[] { "..\\[[currentNamespace]].Core\\[[currentNamespace]].Core.csproj" });
+
+            infrastructure.DoesProjectExist(rootDirectory);
+            infrastructure.CorrectProjectReferences();
+            infrastructure.CheckDependencies();
 
             List<FileCreationArgs> infraFileCreationsArgs = new List<FileCreationArgs>
             {
@@ -56,6 +64,11 @@
 
             ProjectProperties coreProperties = new ProjectProperties(projectName: "Core", globalNamespace: globalNamespace, rootDirectory: rootDirectory);
 
+            Project core = new Project(coreProperties, new string[] { }, new string[] { });
+
+            core.DoesProjectExist(rootDirectory);
+            core.CorrectProjectReferences();
+
             List<FileCreationArgs> coreFileCreationsArgs = new List<FileCreationArgs>
             {
                 new FileCreationArgs()
@@ -80,11 +93,11 @@
                 },
             };
 
-            CreationExecution infraProcess = new CreationExecution(rootDirectory, infrastructureProperties, infraFileCreationsArgs, packages, new string[] { "..\\[[currentNamespace]].Core\\[[currentNamespace]].Core.csproj" });
+            CreationExecution infraProcess = new CreationExecution(infrastructureProperties, infraFileCreationsArgs);
 
             infraProcess.Execute();
 
-            CreationExecution coreProcess = new CreationExecution(rootDirectory, coreProperties, coreFileCreationsArgs, new string[] { }, new string[] { });
+            CreationExecution coreProcess = new CreationExecution(coreProperties, coreFileCreationsArgs);
 
             coreProcess.Execute();
         }
