@@ -43,7 +43,7 @@ namespace HandsomePattern
             List<Tuple<string, string>> tupleList = new List<Tuple<string, string>>()
             {
                 Tuple.Create("currentNamespace", _namespace),
-                Tuple.Create("connectionString", "Server=localhost;Database=GestionNutricion;Integrated Security=true;Trust Server Certificate=true;"),
+                Tuple.Create("connectionString", "Server=localhost;Database=HandsomePattern;Integrated Security=true;Trust Server Certificate=true;"),
                 Tuple.Create("databaseContext", $"{_namespace}Context")
             };
 

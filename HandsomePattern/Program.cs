@@ -20,7 +20,7 @@ namespace HandsomePattern
 
             if (!isSolution) throw new Exception("Para utilizar esta herramienta, posicionese dentro de una solucion de C#.");
 
-            string[] packages = new string[] { "Microsoft.EntityFrameworkCore", "Microsoft.EntityFrameworkCore.SqlServer", "Microsoft.OpenApi", "AutoMapper.Extensions.Microsoft.DependencyInjection", "Swashbuckle.AspNetCore.SwaggerGen" };
+            string[] packages = new string[] { "Microsoft.EntityFrameworkCore", "Microsoft.EntityFrameworkCore.SqlServer", "Microsoft.OpenApi", "AutoMapper.Extensions.Microsoft.DependencyInjection", "Swashbuckle.AspNetCore.SwaggerGen", "Microsoft.EntityFrameworkCore.Tools" };
 
             ProjectProperties infrastructureProperties = new ProjectProperties(projectName: "Infrastructure", globalNamespace: globalNamespace, rootDirectory: rootDirectory);
 

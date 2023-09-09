@@ -2,7 +2,10 @@
   "profiles": {
     "HandsomePattern": {
       "commandName": "Project",
-      "commandLineArgs": "HandsomePattern"
+      "commandLineArgs": "HandsomePattern",
+      "environmentVariables": {
+        "connectionString": "Server=localhost;Database=HandsomePattern;Integrated Security=true;Trust Server Certificate=true;"
+      }
     }
   }
 }
