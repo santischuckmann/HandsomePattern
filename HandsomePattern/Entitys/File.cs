@@ -14,5 +14,7 @@ namespace HandsomePattern.Entitys
         public string PathsToFile { get; set; }
         public string Template { get; set; }
         public int DependencyTypeId { get; set; }
+        public string ProjectName { get; set; }
+        public virtual DependencyType DependencyType { get; set; }
     }
 }

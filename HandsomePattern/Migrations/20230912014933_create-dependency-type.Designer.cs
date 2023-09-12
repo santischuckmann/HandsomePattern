@@ -3,6 +3,7 @@ using HandsomePattern.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HandsomePattern.Migrations
 {
     [DbContext(typeof(HandsomePatternContext))]
-    partial class HandsomePatternContextModelSnapshot : ModelSnapshot
+    [Migration("20230912014933_create-dependency-type")]
+    partial class createdependencytype
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,9 +36,6 @@ namespace HandsomePattern.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -71,24 +71,7 @@ namespace HandsomePattern.Migrations
 
                     b.HasKey("FileId");
 
-                    b.HasIndex("DependencyTypeId");
-
                     b.ToTable("File", (string)null);
-                });
-
-            modelBuilder.Entity("HandsomePattern.Entitys.FileDB", b =>
-                {
-                    b.HasOne("HandsomePattern.Entitys.DependencyType", "DependencyType")
-                        .WithMany("Files")
-                        .HasForeignKey("DependencyTypeId")
-                        .IsRequired();
-
-                    b.Navigation("DependencyType");
-                });
-
-            modelBuilder.Entity("HandsomePattern.Entitys.DependencyType", b =>
-                {
-                    b.Navigation("Files");
                 });
 #pragma warning restore 612, 618
         }

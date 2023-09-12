@@ -9,8 +9,13 @@ namespace HandsomePattern.Entitys
 {
     public class DependencyType
     {
+        public DependencyType() 
+        {
+            Files = new HashSet<FileDB>();
+        }
         public int Id { get; set; }
-        public int Description { get; set; }
+        public string Description { get; set; }
         public int StatusId { get; set; }
+        public virtual ICollection<FileDB> Files { get; set; }
     }
 }

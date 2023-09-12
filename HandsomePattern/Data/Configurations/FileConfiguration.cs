@@ -30,6 +30,11 @@ namespace HandsomePattern.Data.Configurations
                 .HasColumnType("nvarchar(MAX)")
                 .IsRequired()
                 .IsUnicode(false);
+
+            builder.HasOne(f => f.DependencyType)
+                .WithMany(d => d.Files)
+                .HasForeignKey(f => f.DependencyTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         }
     }
 }

@@ -9,6 +9,7 @@ namespace HandsomePattern.Infrastructure.Data
     public partial class HandsomePatternContext : DbContext
     {
         public DbSet<FileDB> Files { get; set; }
+        public DbSet<DependencyType> DependencyTypes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

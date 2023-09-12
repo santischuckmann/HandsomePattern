@@ -8,9 +8,9 @@ namespace HandsomePattern.Enums
 {
     public enum DependencyType
     {
-        None,
-        Service,
-        Handler,
-        Repository
+        None = 1,
+        Service = 2,
+        Handler = 3,
+        Repository = 4
     }
 }

@@ -1,4 +1,6 @@
-﻿using HandsomePattern.Logic;
+﻿using HandsomePattern.Entitys;
+using HandsomePattern.Infrastructure.Data;
+using HandsomePattern.Logic;
 
 namespace HandsomePattern
 {
@@ -30,37 +32,22 @@ namespace HandsomePattern
             infrastructure.CorrectProjectReferences();
             infrastructure.CheckDependencies();
 
-            List<FileCreationArgs> infraFileCreationsArgs = new List<FileCreationArgs>
+            List<FileCreationArgs> infraFileCreationsArgs = new List<FileCreationArgs>();
+
+            var context = new HandsomePatternContext();
+
+            List<FileDB> filesInfra = context.Files.Where(x => x.ProjectName == "Infrastructure").ToList();
+
+            foreach (FileDB file in filesInfra)
             {
-                new FileCreationArgs()
+                infraFileCreationsArgs.Add(new FileCreationArgs()
                 {
-                    Filename = "[[currentNamespace]]DbContext.cs",
-                    PathsToFile = new string[] { "Data" },
-                    Template = Templates.DbContextTemplate
-                },
-
-                new FileCreationArgs()
-                {
-                    Filename = "ServiceCollectionExtensions.cs",
-                    PathsToFile = new string[] { "Extensions" },
-                    Template = Templates.ServiceExtensionsTemplate
-                },
-                
-                new FileCreationArgs()
-                {
-                    Filename = "BaseRepository.cs",
-                    PathsToFile = new string[] { "Repositories" },
-                    Template = Templates.BaseRepositoryTemplate
-                },
-
-                new FileCreationArgs()
-                {
-                    Filename = "UnitOfWork.cs",
-                    PathsToFile = new string[] { "Repositories" },
-                    Template = Templates.UnitOfWorkTemplate,
-                    DependencyType = Enums.DependencyType.Repository
-                }
-            };
+                    DependencyType = (Enums.DependencyType)file.DependencyTypeId,
+                    Filename = file.Filename,
+                    PathsToFile = file.PathsToFile.Split("//"),
+                    Template = file.Template
+                });
+            }
 
             ProjectProperties coreProperties = new ProjectProperties(projectName: "Core", globalNamespace: globalNamespace, rootDirectory: rootDirectory);
 
@@ -69,29 +56,20 @@ namespace HandsomePattern
             core.DoesProjectExist(rootDirectory);
             core.CorrectProjectReferences();
 
-            List<FileCreationArgs> coreFileCreationsArgs = new List<FileCreationArgs>
+            List<FileDB> filesCore = context.Files.Where(x => x.ProjectName == "Core").ToList();
+
+            List<FileCreationArgs> coreFileCreationsArgs = new List<FileCreationArgs>();
+
+            foreach (FileDB file in filesCore)
             {
-                new FileCreationArgs()
+                coreFileCreationsArgs.Add(new FileCreationArgs()
                 {
-                    Filename = "IRepository.cs",
-                    PathsToFile = new string[] { "Interfaces", "Repositories" },
-                    Template = Templates.IRepositoryTemplate,
-                },
-
-                new FileCreationArgs()
-                {
-                    Filename = "IUnitOfWork.cs",
-                    PathsToFile = new string[] { "Interfaces", "Repositories" },
-                    Template = Templates.IUnitOfWorkTemplate,
-                },
-
-                new FileCreationArgs()
-                {
-                    Filename = "CommonEntity.cs",
-                    PathsToFile = new string[] { "Entitys" },
-                    Template = Templates.CommonEntityTemplate,
-                },
-            };
+                    DependencyType = (Enums.DependencyType)file.DependencyTypeId,
+                    Filename = file.Filename,
+                    PathsToFile = file.PathsToFile.Split("//"),
+                    Template = file.Template
+                });
+            }
 
             CreationExecution infraProcess = new CreationExecution(infrastructureProperties, infraFileCreationsArgs);
 
